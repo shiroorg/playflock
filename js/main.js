@@ -12,9 +12,53 @@ class FormInput extends React.Component {
 
 class FormCreate extends React.Component {
 
-    handleClick() {
+    constructor(props) {
+        super(props)
+        this.state = {
+            data: [],
+            isLoading: false,
+        }
+    }
 
+    handleClick(e) {
+        e.preventDefault();
 
+        let unitData = {
+            hp: parseInt($("#currentHp").val()),
+            maxHp: parseInt($("#maxHp").val()),
+            mana: parseInt($("#currentMana").val()),
+            maxMana: parseInt($("#maxMana").val()),
+            armor: parseInt($("#armor").val()),
+            magResist: parseInt($("#magResist").val()),
+            x: parseInt($("#x").val()),
+            y: parseInt($("#y").val()),
+            unitClass: $("#unitClass").val()
+        };
+
+        if(unitData.hp > unitData.maxHp) {
+            alert('Error: HP more MaxHP');
+            return false;
+        }
+        if(unitData.mana > unitData.maxMana) {
+            alert('Error: Mana more MaxMana');
+            return false;
+        }
+
+        $("#submitUnit").attr('disabled', true)
+
+        $.post({
+            type: "POST",
+            url: 'http://localhost:3000/api/unit/edit',
+            data: unitData,
+            success: function (response) {
+
+                if(response.error) {
+                    alert(response.error);
+                }
+
+                $("#submitUnit").attr('disabled', null)
+            },
+        });
 
     }
 
