@@ -8,8 +8,8 @@ const port = 3000;
 const url = "mongodb://localhost:27017/";
 const app = Express();
 const mongoClient = new MongoClient(url);
-const mongoDbName = 'unit';
-const mongoDbCollection = 'users';
+const mongoDbName = 'game';
+const mongoDbCollection = 'unit';
 
 app.use(Express.urlencoded());
 app.use(Express.json())
@@ -26,6 +26,18 @@ app.use(function(req, res, next) {
     next();
 });
 
+async function unitUpdate(unitData) {
+    try {
+        await mongoClient.connect();
+        const db = mongoClient.db(mongoDbName);
+        const collection = db.collection(mongoDbCollection);
+        let result = await collection.insertOne(unitData);
+        return result;
+    } finally {
+        await mongoClient.close();
+    }
+}
+
 app.post('/api/unit/edit', (req, res) => {
 
     const {hp, maxHp, mana, maxMana, armor, magResist, x, y, unitClass} = req.body;
@@ -33,9 +45,6 @@ app.post('/api/unit/edit', (req, res) => {
     let unitData = {
         hp, maxHp, mana, maxMana, armor, magResist, x, y, unitClass
     };
-
-    //console.log(req);
-    console.log(unitData);
 
     if(!unitData.hp || unitData.hp === 'NaN') {
         res.send({error: "Empty: HP"});
@@ -62,14 +71,11 @@ app.post('/api/unit/edit', (req, res) => {
         return false;
     }
 
-    mongoClient.connect(function (err, client) {
-        const db = client.db(mongoDbName);
-        const collection = db.collection(mongoDbCollection);
-        collection.insertOne(unitData);
-        client.close();
-        res.setHeader('Content-Type', 'application/json');
-        res.send(unitData);
-    });
+    let result = unitUpdate(unitData);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.send(unitData);
+
 })
 
 app.get('/api/unit/list', (req, res) => {

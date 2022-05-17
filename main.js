@@ -12,14 +12,6 @@ class FormInput extends React.Component {
 
 class FormCreate extends React.Component {
 
-    constructor(props) {
-        super(props)
-        this.state = {
-            data: [],
-            isLoading: false,
-        }
-    }
-
     handleClick(e) {
         e.preventDefault();
 
@@ -89,6 +81,56 @@ class FormCreate extends React.Component {
     }
 }
 
-const domContainer = document.querySelector('#create-unit');
+class ListUnit extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            unitList: {},
+            unitMap: [],
+        };
+    }
+
+    render() {
+
+        let unitList = {};
+        let unitMap = [];
+        $.post({
+            type: "GET",
+            url: 'http://localhost:3000/api/unit/list',
+            success: function (response) {
+
+                if(response.error) {
+                    alert(response.error);
+                }
+
+                $.each(response, function (key, value) {
+                    unitList[value._id] = value;
+                    unitMap.push(value._id);
+                });
+
+                this.setState({
+                    unitList: unitList,
+                    unitMap: unitMap,
+                });
+
+            },
+        });
+
+        return (
+            <form action="#" className="row">
+                { this.state.unitMap.map(function(unit, index){
+                    return (<div key={index} className="mb-3 col-12">{unit}</div>)
+                }) }
+            </form>
+        );
+    }
+}
+
+// const domContainer = document.querySelector('#create-unit');
+// const root = ReactDOM.createRoot(domContainer);
+// root.render(<ListUnit/>);
+
+const domContainer = document.querySelector('#list-unit');
 const root = ReactDOM.createRoot(domContainer);
-root.render(e(FormCreate));
+root.render(e(ListUnit));
